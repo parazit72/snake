@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title> 
+    <style>
+        body{
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+        canvas{
+            border: 1px solid #000;
+        }
+
+
+        @media (orientation: landscape) {
+            canvas{
+                width: 100%;
+            }
+        }
+
+        @media (orientation: portrait) {
+            body {
+                height: 100%;
+            }
+        }   
+        
+    </style>
+</head>
+<body id="body">
+
+
+    <canvas id="canvas" width="500" height="500">
+
+    </canvas>
+
+
+    <script>
+
+        class SnakeGame{
+            canvas = document.getElementById('canvas');
+            screen = {
+                width: 500,
+                height: 500,
+            }
+            food = {
+                x : Math.floor(Math.random() * 50) * 10 ,
+                y : Math.floor(Math.random() * 50) * 10 ,
+            }
+            speed= 100
+            snake = {
+                width: 10,
+                direction: 'right',
+                position: [
+                    
+                    {
+                        x: 210,
+                        y: 250
+                    },
+                    {
+                        x: 220,
+                        y: 250
+                    },
+                    {
+                        x: 230,
+                        y: 250
+                    },
+                    {
+                        x: 240,
+                        y: 250
+                    },
+                    {
+                        x: 250,
+                        y: 250
+                    }
+                ]
+            }
+
+            play;
+
+            constructor() {
+                this.run()                
+                // this.draw()
+                                
+                document.addEventListener('keydown', (e)=>{
+                    if(e.keyCode == 37){
+                        this.snake.direction = "left";
+                    }
+                    if(e.keyCode == 38){
+                        this.snake.direction = "up";
+                    }
+                    if(e.keyCode == 39){
+                        this.snake.direction = "right";
+                    }
+                    if(e.keyCode == 40){
+                        this.snake.direction = "down";
+                    }
+                })
+            }
+
+            run(){
+                this.play = setInterval(() => {
+                    this.checkEat()
+                    this.move();
+                    this.draw()
+                }, this.speed);
+            }
+
+
+            addFood(){
+                this.food = {
+                    x : Math.floor(Math.random() * 50) * 10 ,
+                    y : Math.floor(Math.random() * 50) * 10 ,
+                }
+                this.speed = this.speed * 0.9
+                clearInterval(this.play)
+                this.run()
+            }
+
+            move() {
+                if(this.snake.direction === "right"){
+                    this.snake.position.shift()
+                    let newPosition = {
+                        x : this.snake.position[this.snake.position.length - 1].x + 10,
+                        y : this.snake.position[this.snake.position.length - 1].y 
+                    }
+                    this.snake.position.push(newPosition)
+                }
+                
+                if(this.snake.direction === "left"){
+                    this.snake.position.shift()
+                    let newPosition = {
+                        x : this.snake.position[this.snake.position.length - 1].x - 10,
+                        y : this.snake.position[this.snake.position.length - 1].y 
+                    }
+                    this.snake.position.push(newPosition)
+
+                }
+
+                if(this.snake.direction === "up"){
+                    this.snake.position.shift()
+                    let newPosition = {
+                        x : this.snake.position[this.snake.position.length - 1].x ,
+                        y : this.snake.position[this.snake.position.length - 1].y - 10
+                    }
+                    this.snake.position.push(newPosition)
+
+                }
+
+                if(this.snake.direction === "down"){
+                    this.snake.position.shift()
+                    let newPosition = {
+                        x : this.snake.position[this.snake.position.length - 1].x ,
+                        y : this.snake.position[this.snake.position.length - 1].y + 10
+                    }
+                    this.snake.position.push(newPosition)
+                }
+                // console.log(this.snake.position);
+                
+                this.checkBrake()
+            }
+            checkBrake() {
+                if(this.snake.position[this.snake.position.length - 1].x < 0 || this.snake.position[this.snake.position.length - 1].x > this.screen.width){
+                    clearInterval(this.play)
+                    alert('Game Over')
+                }
+                if(this.snake.position[this.snake.position.length - 1].y < 0 || this.snake.position[this.snake.position.length - 1].y > this.screen.width){
+                    clearInterval(this.play)
+                    alert('Game Over')
+                }
+
+                for (let i = 0; i < this.snake.position.length - 1; i++) {
+                    if(this.snake.position[this.snake.position.length - 1].x == this.snake.position[i].x && this.snake.position[this.snake.position.length - 1].y == this.snake.position[i].y){
+                        clearInterval(this.play)
+                        alert('Game Over')
+                    }                
+                }
+            }
+
+            checkEat() {
+                if(this.snake.position[this.snake.position.length - 1].x == this.food.x && this.snake.position[this.snake.position.length - 1].y == this.food.y){
+                    this.snake.position.push(this.food)
+                    this.addFood()
+                }
+            }
+
+
+
+            draw() {
+                if (canvas.getContext) {
+                    var ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, this.screen.width, this.screen.height);
+
+                    // Draw yellow background
+                    // ctx.beginPath();
+                    // ctx.fillStyle = '#ff6';
+                    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+                    ctx.beginPath();
+                    ctx.lineWidth = 10
+                    ctx.lineCap = 'lineJoin'
+
+
+                    for (let i = 0; i < this.snake.position.length; i++) {
+                        ctx.fillRect(this.snake.position[i].x, this.snake.position[i].y, 10, 10)
+                    }
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.fillRect(this.food.x, this.food.y, 10, 10)
+                    ctx.stroke();
+
+
+
+                    // ctx.fill();
+                }
+            }
+
+        }
+        let snake = new SnakeGame();
+
+    </script>
+</body>
+</html>
